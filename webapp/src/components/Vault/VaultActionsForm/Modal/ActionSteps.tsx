@@ -12,21 +12,17 @@ import {
   VaultAddressMap,
   VaultOptions,
   VaultVersion,
-  LidoCurvePoolAddress,
   VaultAllowedDepositAssets,
-  CurveSwapSlippage,
   getSolanaVaultInstance,
   isSolanaVault,
 } from "shared/lib/constants/constants";
 import { isETHVault } from "shared/lib/utils/vault";
-import { amountAfterSlippage } from "shared/lib/utils/math";
 import { usePendingTransactions } from "shared/lib/hooks/pendingTransactionsContext";
 import useVaultActionForm from "../../../../hooks/useVaultActionForm";
 import { parseUnits } from "@ethersproject/units";
 import { useVaultData, useV2VaultData } from "shared/lib/hooks/web3DataContext";
 import useV2VaultContract from "shared/lib/hooks/useV2VaultContract";
 import WarningStep from "./WarningStep";
-import { getCurvePool } from "shared/lib/hooks/useCurvePool";
 import { depositSAVAX } from "shared/lib/hooks/useSAVAXDeposit";
 import useVaultAccounts from "shared/lib/hooks/useVaultAccounts";
 import { useFlexVault } from "shared/lib/hooks/useFlexVault";
@@ -270,23 +266,7 @@ const ActionSteps: React.FC<ActionStepsProps> = ({
                       case "rSOL-THETA":
                         return;
                       case "rstETH-THETA":
-                        /**
-                         * Default slippage of 0.3%
-                         */
-                        const curvePool = getCurvePool(
-                          ethereumProvider,
-                          LidoCurvePoolAddress
-                        );
-
-                        const minOut = await curvePool.get_dy(
-                          1,
-                          0,
-                          amountAfterSlippage(amount, CurveSwapSlippage),
-                          {
-                            gasLimit: 400000,
-                          }
-                        );
-                        res = await vault.withdrawInstantly(amountStr, minOut, {
+                        res = await vault.withdrawInstantly(amountStr, 0, {
                           gasLimit: 220000,
                         });
                         break;
@@ -318,22 +298,7 @@ const ActionSteps: React.FC<ActionStepsProps> = ({
                   case "complete":
                     switch (vaultActionForm.vaultOption) {
                       case "rstETH-THETA":
-                        /**
-                         * Default slippage of 0.3%
-                         */
-                        const curvePool = getCurvePool(
-                          ethereumProvider,
-                          LidoCurvePoolAddress
-                        );
-                        const minOut = await curvePool.get_dy(
-                          1,
-                          0,
-                          amountAfterSlippage(amount, CurveSwapSlippage),
-                          {
-                            gasLimit: 400000,
-                          }
-                        );
-                        res = await vault.completeWithdraw(minOut, {
+                        res = await vault.completeWithdraw(0, {
                           gasLimit: 400000,
                         });
                         break;
